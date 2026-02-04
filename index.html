@@ -1,65 +1,86 @@
-<!-- @format -->
-
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ko</title>
+    <title>kolon-derma</title>
+
+    <!-- GA4 -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-2ZQYJ2EQS7"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-2ZQYJ2EQS7", {
+        anonymize_ip: true,
+      });
+    </script>
   </head>
+
   <body>
     <iframe id="viewer"></iframe>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2ZQYJ2EQS7"></script>
-  <script>
 
-      // URL 파라미터 가져오기
-    const params = new URLSearchParams(window.location.search);
-    const type = params.get("type");
-    const iframe = document.getElementById("viewer");
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const content_key = params.get("content_key");
+      const iframe = document.getElementById("viewer");
+      let item = null;
+      fetch("/content_map.json")
+        .then((res) => res.json())
+        .then((map) => {
+          item = map[content_key];
 
+          if (!item) {
+            iframe.srcdoc = `
+          <h2 style="text-align:center; margin-top:50px;">
+            올바른 type 값이 없습니다.
+          </h2>
+        `;
+            return;
+          }
 
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-2ZQYJ2EQS7', {
-      anonymize_ip: true
-    });
+          if (item.type == "survey") {
+            //   iframe.srcdoc = `
+            //   <div style="text-align:center; margin-top:50px;">
+            //     <a href="${item.src}" target="_blank">
+            //       설문 참여하기
+            //     </a>
+            //   </div>
+            // `;
+            iframe.src = item.src;
+          } else {
+            iframe.src = item.src;
+          }
 
-    gtag('event', 'qr_view', {type});
-
-
-  switch (type) {
-    case "pdf":
-        // 같은 서버에 있는 pdf 파일이라고 가정
-        iframe.src = `/pdf01.pdf`;
-      break;
-
-    case "survey":
-      // 구글 설문 URL
-      iframe.src = "https://forms.gle/FL7R4LsyvvsJBSN97";
-      break;
-
-    case "video":
-      // 유튜브 embed 예시
-      iframe.src = "/20201115_135813_01.mp4";
-      break;
-    default:
-      iframe.srcdoc = `
+          // GA 이벤트
+          gtag("event", "qr_view", {
+            content_type: item.title,
+          });
+        })
+        .catch(() => {
+          iframe.srcdoc = `
         <h2 style="text-align:center; margin-top:50px;">
-          올바른 type 값이 없습니다.
+          매핑 정보를 불러오지 못했습니다.
         </h2>
       `;
-  }
-</script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-    }
-    #viewer {
-      width: 100%;
-      height: 100vh;
-      border: none;
-    }
-  </style>
+        });
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #viewer {
+        width: 100%;
+        height: 100vh;
+        border: none;
+      }
+    </style>
+  </body>
 </html>
