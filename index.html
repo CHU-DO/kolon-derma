@@ -29,12 +29,12 @@
       const params = new URLSearchParams(window.location.search);
       const content_key = params.get("content_key");
       const iframe = document.getElementById("viewer");
+      const r2BucketNm = "https://pub-ee4d21cc8d0a487da2147fc062da4bf1.r2.dev/";
       let item = null;
-      fetch("/content_map.json")
+      fetch(`${r2BucketNm}content_map.json`)
         .then((res) => res.json())
         .then((map) => {
           item = map[content_key];
-
           if (!item) {
             iframe.srcdoc = `
           <h2 style="text-align:center; margin-top:50px;">
@@ -54,11 +54,15 @@
             // `;
             iframe.src = item.src;
           } else {
-            iframe.src = item.src;
+            console.log(
+              "`${r2BucketNm}${item.src}`:",
+              `${r2BucketNm}${item.src}`
+            );
+            iframe.src = `${r2BucketNm}${item.src}`;
           }
 
           // GA 이벤트
-          gtag("event", "qr_view", {
+          gtag("event", "kolon-derma-title", {
             content_type: item.title,
           });
         })
